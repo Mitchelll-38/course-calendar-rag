@@ -34,3 +34,12 @@ python -m course_calendar_rag.cli evaluate --retriever dense --output results/de
 pip install -e ".[dense]"
 python -m course_calendar_rag.cli evaluate --retriever dense --sentence-transformer
 ```
+
+## Hybrid retrieval
+
+Weighted reciprocal rank fusion combines BM25 and dense rankings without requiring their raw scores to share a scale:
+
+```shell
+python -m course_calendar_rag.cli search "COMP SCI 2C03 prerequisite" --retriever hybrid
+python -m course_calendar_rag.cli evaluate --retriever hybrid --output results/hybrid_baseline.json
+```

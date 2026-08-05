@@ -10,6 +10,7 @@ from typing import Any
 from .bm25 import BM25Index
 from .dense import DenseIndex, SentenceTransformerEmbedder
 from .evaluation import evaluate, summary_as_dict
+from .hybrid import HybridIndex
 
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -29,12 +30,12 @@ def build_parser() -> argparse.ArgumentParser:
     search = subparsers.add_parser("search", help="search the sample corpus")
     search.add_argument("query")
     search.add_argument("--top-k", type=int, default=5)
-    search.add_argument("--retriever", choices=("bm25", "dense"), default="bm25")
+    search.add_argument("--retriever", choices=("bm25", "dense", "hybrid"), default="bm25")
 
     evaluation = subparsers.add_parser("evaluate", help="evaluate BM25 retrieval")
     evaluation.add_argument("--top-k", type=int, default=5)
     evaluation.add_argument("--output", type=Path)
-    evaluation.add_argument("--retriever", choices=("bm25", "dense"), default="bm25")
+    evaluation.add_argument("--retriever", choices=("bm25", "dense", "hybrid"), default="bm25")
     evaluation.add_argument("--sentence-transformer", action="store_true")
     return parser
 
@@ -44,7 +45,10 @@ def main() -> int:
     passages = load_jsonl(DEFAULT_PASSAGES)
     use_dense = args.retriever == "dense"
     embedder = SentenceTransformerEmbedder() if getattr(args, "sentence_transformer", False) else None
-    index = DenseIndex(passages, embedder) if use_dense else BM25Index(passages)
+    if args.retriever == "hybrid":
+        index = HybridIndex(passages, embedder=embedder)
+    else:
+        index = DenseIndex(passages, embedder) if use_dense else BM25Index(passages)
     if args.command == "search":
         for rank, result in enumerate(index.search(args.query, top_k=args.top_k), start=1):
             print(f"{rank}. {result.passage_id} ({result.score:.4f}) — {result.passage['title']}")
