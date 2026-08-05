@@ -24,3 +24,13 @@ $env:PYTHONPATH="src" # PowerShell; use `export PYTHONPATH=src` on macOS/Linux
 python -m course_calendar_rag.cli search "Can I take COMP SCI 2C03?"
 python -m course_calendar_rag.cli evaluate --output results/bm25_baseline.json
 ```
+
+## Dense baseline
+
+Dense retrieval supports a deterministic feature-hashing baseline with no model download, plus an optional Sentence Transformers adapter:
+
+```shell
+python -m course_calendar_rag.cli evaluate --retriever dense --output results/dense_baseline.json
+pip install -e ".[dense]"
+python -m course_calendar_rag.cli evaluate --retriever dense --sentence-transformer
+```
