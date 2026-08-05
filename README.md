@@ -62,3 +62,13 @@ uvicorn course_calendar_rag.api:app --reload
 ```
 
 Interactive documentation is available at `http://localhost:8000/docs`. The current answer endpoint is deliberately extractive and always returns ranked source passages with a synthetic-data disclaimer.
+
+## Frontend
+
+The Next.js interface lives in `frontend`:
+
+```shell
+cd frontend
+npm install
+npm run dev
+```
