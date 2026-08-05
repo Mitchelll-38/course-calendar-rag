@@ -1,0 +1,20 @@
+{"id":"q001","question":"What is the normal full-time course load across fall and winter?","gold_passage_ids":["reg-course-load-001"],"category":"course_load","difficulty":"easy"}
+{"id":"q002","question":"Do I need permission to take more than 30 units?","gold_passage_ids":["reg-overload-001","reg-course-load-001"],"category":"course_load","difficulty":"medium"}
+{"id":"q003","question":"What factors can be considered for an overload request?","gold_passage_ids":["reg-overload-001"],"category":"course_load","difficulty":"easy"}
+{"id":"q004","question":"Can I change a course after the add/drop deadline?","gold_passage_ids":["reg-add-drop-001"],"category":"registration_changes","difficulty":"medium"}
+{"id":"q005","question":"When can I add or drop a fall course online?","gold_passage_ids":["reg-add-drop-001"],"category":"registration_changes","difficulty":"easy"}
+{"id":"q006","question":"Why is registration blocking me when I have not taken an earlier course?","gold_passage_ids":["reg-prereq-001"],"category":"prerequisites","difficulty":"medium"}
+{"id":"q007","question":"What does prerequisite mean?","gold_passage_ids":["reg-prereq-001"],"category":"prerequisites","difficulty":"easy"}
+{"id":"q008","question":"Who can let me enrol without the listed prerequisite?","gold_passage_ids":["reg-waiver-001"],"category":"prerequisites","difficulty":"easy"}
+{"id":"q009","question":"Does a prerequisite waiver guarantee me a seat?","gold_passage_ids":["reg-waiver-001"],"category":"prerequisites","difficulty":"medium"}
+{"id":"q010","question":"Can I receive credit for two antirequisite courses?","gold_passage_ids":["reg-antireq-001"],"category":"credit","difficulty":"easy"}
+{"id":"q011","question":"What happens to my transcript if I repeat a class?","gold_passage_ids":["reg-repeat-001"],"category":"academic_records","difficulty":"medium"}
+{"id":"q012","question":"Does repeating a course erase my first attempt?","gold_passage_ids":["reg-repeat-001"],"category":"academic_records","difficulty":"easy"}
+{"id":"q013","question":"Am I registered while I am on a course waitlist?","gold_passage_ids":["reg-waitlist-001"],"category":"waitlists","difficulty":"easy"}
+{"id":"q014","question":"What may happen when a seat opens for a waitlisted course?","gold_passage_ids":["reg-waitlist-001"],"category":"waitlists","difficulty":"medium"}
+{"id":"q015","question":"Why can I see an open seat but still not enrol?","gold_passage_ids":["reg-reserved-001"],"category":"enrolment_controls","difficulty":"hard"}
+{"id":"q016","question":"Will reserved seats definitely open on a particular date?","gold_passage_ids":["reg-reserved-001"],"category":"enrolment_controls","difficulty":"medium"}
+{"id":"q017","question":"What is COMPSCI 1MD3 about?","gold_passage_ids":["course-compsci-1md3"],"category":"course_lookup","difficulty":"easy"}
+{"id":"q018","question":"Which sample course covers data structures and algorithm analysis?","gold_passage_ids":["course-compsci-2c03"],"category":"course_lookup","difficulty":"easy"}
+{"id":"q019","question":"What prerequisite does COMP SCI 2C03 have in this sample?","gold_passage_ids":["course-compsci-2c03","course-compsci-1md3"],"category":"course_lookup","difficulty":"hard"}
+{"id":"q020","question":"How many units is Engineering Mathematics I?","gold_passage_ids":["course-math-1za3"],"category":"course_lookup","difficulty":"easy"}
