@@ -6,5 +6,11 @@ The project will combine lexical and semantic retrieval, reciprocal rank fusion,
 
 ## Status
 
-Initial repository setup. The first feature pull request will add a small synthetic test corpus and its validation tooling before any live calendar ingestion is introduced.
+The first development milestone adds a small synthetic test corpus and labeled retrieval questions before any live calendar ingestion is introduced. See [`data/sample`](data/sample) for the dataset and its limitations.
 
+## Validate the sample data
+
+```shell
+python scripts/validate_sample_data.py
+python -m unittest discover -s tests -v
+```
