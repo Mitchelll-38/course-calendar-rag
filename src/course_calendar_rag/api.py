@@ -6,6 +6,7 @@ from functools import lru_cache
 from typing import Annotated, Literal
 
 from fastapi import FastAPI, Query
+from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
 
 from .bm25 import BM25Index
@@ -81,6 +82,13 @@ app = FastAPI(
     title="Course Calendar RAG API",
     description="Grounded retrieval over the synthetic academic-calendar fixture.",
     version="0.1.0",
+)
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:3000", "http://127.0.0.1:3000"],
+    allow_credentials=False,
+    allow_methods=["GET", "POST", "OPTIONS"],
+    allow_headers=["Content-Type"],
 )
 
 
