@@ -9,6 +9,7 @@ __pycache__/
 node_modules/
 .next/
 out/
+*.tsbuildinfo
 
 # Environment and local data
 .env
@@ -22,4 +23,3 @@ data/raw/
 .idea/
 .DS_Store
 Thumbs.db
-
