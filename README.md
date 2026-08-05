@@ -51,3 +51,14 @@ An interpretable candidate reranker prioritizes title matches and exact course c
 ```shell
 python -m course_calendar_rag.cli evaluate --retriever reranked --output results/reranked_baseline.json
 ```
+
+## API
+
+Install the API extra and start the service:
+
+```shell
+pip install -e ".[api]"
+uvicorn course_calendar_rag.api:app --reload
+```
+
+Interactive documentation is available at `http://localhost:8000/docs`. The current answer endpoint is deliberately extractive and always returns ranked source passages with a synthetic-data disclaimer.
