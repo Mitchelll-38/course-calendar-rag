@@ -1,0 +1,355 @@
+{
+  "retriever": "hybrid",
+  "summary": {
+    "question_count": 20,
+    "recall_at_1": 0.75,
+    "recall_at_3": 0.875,
+    "recall_at_5": 0.875,
+    "mrr": 0.85,
+    "mean_latency_ms": 0.285
+  },
+  "questions": [
+    {
+      "question_id": "q001",
+      "ranked_passage_ids": [
+        "reg-course-load-001",
+        "reg-overload-001",
+        "reg-waiver-001",
+        "reg-add-drop-001",
+        "reg-waitlist-001"
+      ],
+      "gold_passage_ids": [
+        "reg-course-load-001"
+      ],
+      "recall_at_1": 1.0,
+      "recall_at_3": 1.0,
+      "recall_at_5": 1.0,
+      "reciprocal_rank": 1.0
+    },
+    {
+      "question_id": "q002",
+      "ranked_passage_ids": [
+        "reg-course-load-001",
+        "reg-overload-001",
+        "reg-waiver-001",
+        "course-compsci-1md3",
+        "course-math-1za3"
+      ],
+      "gold_passage_ids": [
+        "reg-overload-001",
+        "reg-course-load-001"
+      ],
+      "recall_at_1": 0.5,
+      "recall_at_3": 1.0,
+      "recall_at_5": 1.0,
+      "reciprocal_rank": 1.0
+    },
+    {
+      "question_id": "q003",
+      "ranked_passage_ids": [
+        "reg-overload-001",
+        "reg-antireq-001",
+        "course-math-1za3",
+        "reg-repeat-001",
+        "course-compsci-1md3"
+      ],
+      "gold_passage_ids": [
+        "reg-overload-001"
+      ],
+      "recall_at_1": 1.0,
+      "recall_at_3": 1.0,
+      "recall_at_5": 1.0,
+      "reciprocal_rank": 1.0
+    },
+    {
+      "question_id": "q004",
+      "ranked_passage_ids": [
+        "reg-add-drop-001",
+        "reg-waitlist-001",
+        "reg-prereq-001",
+        "reg-repeat-001",
+        "reg-waiver-001"
+      ],
+      "gold_passage_ids": [
+        "reg-add-drop-001"
+      ],
+      "recall_at_1": 1.0,
+      "recall_at_3": 1.0,
+      "recall_at_5": 1.0,
+      "reciprocal_rank": 1.0
+    },
+    {
+      "question_id": "q005",
+      "ranked_passage_ids": [
+        "reg-add-drop-001",
+        "reg-prereq-001",
+        "reg-waiver-001",
+        "course-math-1za3",
+        "reg-repeat-001"
+      ],
+      "gold_passage_ids": [
+        "reg-add-drop-001"
+      ],
+      "recall_at_1": 1.0,
+      "recall_at_3": 1.0,
+      "recall_at_5": 1.0,
+      "reciprocal_rank": 1.0
+    },
+    {
+      "question_id": "q006",
+      "ranked_passage_ids": [
+        "reg-waitlist-001",
+        "reg-prereq-001",
+        "reg-waiver-001",
+        "reg-reserved-001",
+        "reg-repeat-001"
+      ],
+      "gold_passage_ids": [
+        "reg-prereq-001"
+      ],
+      "recall_at_1": 0.0,
+      "recall_at_3": 1.0,
+      "recall_at_5": 1.0,
+      "reciprocal_rank": 0.5
+    },
+    {
+      "question_id": "q007",
+      "ranked_passage_ids": [
+        "reg-prereq-001",
+        "reg-waiver-001",
+        "course-compsci-2c03",
+        "reg-antireq-001",
+        "reg-add-drop-001"
+      ],
+      "gold_passage_ids": [
+        "reg-prereq-001"
+      ],
+      "recall_at_1": 1.0,
+      "recall_at_3": 1.0,
+      "recall_at_5": 1.0,
+      "reciprocal_rank": 1.0
+    },
+    {
+      "question_id": "q008",
+      "ranked_passage_ids": [
+        "reg-waiver-001",
+        "reg-prereq-001",
+        "reg-antireq-001",
+        "reg-waitlist-001",
+        "reg-reserved-001"
+      ],
+      "gold_passage_ids": [
+        "reg-waiver-001"
+      ],
+      "recall_at_1": 1.0,
+      "recall_at_3": 1.0,
+      "recall_at_5": 1.0,
+      "reciprocal_rank": 1.0
+    },
+    {
+      "question_id": "q009",
+      "ranked_passage_ids": [
+        "reg-waitlist-001",
+        "reg-waiver-001",
+        "reg-prereq-001",
+        "reg-repeat-001",
+        "reg-course-load-001"
+      ],
+      "gold_passage_ids": [
+        "reg-waiver-001"
+      ],
+      "recall_at_1": 0.0,
+      "recall_at_3": 1.0,
+      "recall_at_5": 1.0,
+      "reciprocal_rank": 0.5
+    },
+    {
+      "question_id": "q010",
+      "ranked_passage_ids": [
+        "reg-antireq-001",
+        "course-math-1za3",
+        "reg-waitlist-001",
+        "reg-repeat-001",
+        "course-compsci-2c03"
+      ],
+      "gold_passage_ids": [
+        "reg-antireq-001"
+      ],
+      "recall_at_1": 1.0,
+      "recall_at_3": 1.0,
+      "recall_at_5": 1.0,
+      "reciprocal_rank": 1.0
+    },
+    {
+      "question_id": "q011",
+      "ranked_passage_ids": [
+        "course-math-1za3",
+        "reg-overload-001",
+        "course-compsci-1md3",
+        "reg-waitlist-001",
+        "reg-prereq-001"
+      ],
+      "gold_passage_ids": [
+        "reg-repeat-001"
+      ],
+      "recall_at_1": 0.0,
+      "recall_at_3": 0.0,
+      "recall_at_5": 0.0,
+      "reciprocal_rank": 0.0
+    },
+    {
+      "question_id": "q012",
+      "ranked_passage_ids": [
+        "reg-repeat-001",
+        "reg-course-load-001",
+        "reg-waiver-001",
+        "reg-waitlist-001",
+        "reg-prereq-001"
+      ],
+      "gold_passage_ids": [
+        "reg-repeat-001"
+      ],
+      "recall_at_1": 1.0,
+      "recall_at_3": 1.0,
+      "recall_at_5": 1.0,
+      "reciprocal_rank": 1.0
+    },
+    {
+      "question_id": "q013",
+      "ranked_passage_ids": [
+        "reg-waitlist-001",
+        "reg-prereq-001",
+        "course-math-1za3",
+        "reg-repeat-001",
+        "reg-add-drop-001"
+      ],
+      "gold_passage_ids": [
+        "reg-waitlist-001"
+      ],
+      "recall_at_1": 1.0,
+      "recall_at_3": 1.0,
+      "recall_at_5": 1.0,
+      "reciprocal_rank": 1.0
+    },
+    {
+      "question_id": "q014",
+      "ranked_passage_ids": [
+        "reg-waitlist-001",
+        "reg-waiver-001",
+        "reg-prereq-001",
+        "reg-add-drop-001",
+        "reg-reserved-001"
+      ],
+      "gold_passage_ids": [
+        "reg-waitlist-001"
+      ],
+      "recall_at_1": 1.0,
+      "recall_at_3": 1.0,
+      "recall_at_5": 1.0,
+      "reciprocal_rank": 1.0
+    },
+    {
+      "question_id": "q015",
+      "ranked_passage_ids": [
+        "reg-waiver-001",
+        "reg-overload-001",
+        "reg-waitlist-001",
+        "reg-antireq-001",
+        "course-compsci-2c03"
+      ],
+      "gold_passage_ids": [
+        "reg-reserved-001"
+      ],
+      "recall_at_1": 0.0,
+      "recall_at_3": 0.0,
+      "recall_at_5": 0.0,
+      "reciprocal_rank": 0.0
+    },
+    {
+      "question_id": "q016",
+      "ranked_passage_ids": [
+        "reg-reserved-001",
+        "reg-waitlist-001",
+        "reg-add-drop-001",
+        "reg-repeat-001",
+        "reg-waiver-001"
+      ],
+      "gold_passage_ids": [
+        "reg-reserved-001"
+      ],
+      "recall_at_1": 1.0,
+      "recall_at_3": 1.0,
+      "recall_at_5": 1.0,
+      "reciprocal_rank": 1.0
+    },
+    {
+      "question_id": "q017",
+      "ranked_passage_ids": [
+        "course-compsci-1md3",
+        "course-compsci-2c03",
+        "reg-course-load-001",
+        "course-math-1za3",
+        "reg-prereq-001"
+      ],
+      "gold_passage_ids": [
+        "course-compsci-1md3"
+      ],
+      "recall_at_1": 1.0,
+      "recall_at_3": 1.0,
+      "recall_at_5": 1.0,
+      "reciprocal_rank": 1.0
+    },
+    {
+      "question_id": "q018",
+      "ranked_passage_ids": [
+        "course-compsci-2c03",
+        "reg-waiver-001",
+        "reg-overload-001",
+        "course-compsci-1md3",
+        "reg-repeat-001"
+      ],
+      "gold_passage_ids": [
+        "course-compsci-2c03"
+      ],
+      "recall_at_1": 1.0,
+      "recall_at_3": 1.0,
+      "recall_at_5": 1.0,
+      "reciprocal_rank": 1.0
+    },
+    {
+      "question_id": "q019",
+      "ranked_passage_ids": [
+        "course-compsci-2c03",
+        "reg-antireq-001",
+        "reg-prereq-001",
+        "reg-reserved-001",
+        "reg-waiver-001"
+      ],
+      "gold_passage_ids": [
+        "course-compsci-2c03",
+        "course-compsci-1md3"
+      ],
+      "recall_at_1": 0.5,
+      "recall_at_3": 0.5,
+      "recall_at_5": 0.5,
+      "reciprocal_rank": 1.0
+    },
+    {
+      "question_id": "q020",
+      "ranked_passage_ids": [
+        "course-math-1za3",
+        "reg-course-load-001",
+        "reg-prereq-001",
+        "reg-overload-001",
+        "reg-repeat-001"
+      ],
+      "gold_passage_ids": [
+        "course-math-1za3"
+      ],
+      "recall_at_1": 1.0,
+      "recall_at_3": 1.0,
+      "recall_at_5": 1.0,
+      "reciprocal_rank": 1.0
+    }
+  ]
+}
