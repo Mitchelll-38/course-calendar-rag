@@ -43,3 +43,11 @@ Weighted reciprocal rank fusion combines BM25 and dense rankings without requiri
 python -m course_calendar_rag.cli search "COMP SCI 2C03 prerequisite" --retriever hybrid
 python -m course_calendar_rag.cli evaluate --retriever hybrid --output results/hybrid_baseline.json
 ```
+
+## Reranking
+
+An interpretable candidate reranker prioritizes title matches and exact course codes. It can later be replaced by a cross-encoder behind the same retrieval interface.
+
+```shell
+python -m course_calendar_rag.cli evaluate --retriever reranked --output results/reranked_baseline.json
+```

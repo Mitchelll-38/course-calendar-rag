@@ -11,6 +11,7 @@ from .bm25 import BM25Index
 from .dense import DenseIndex, SentenceTransformerEmbedder
 from .evaluation import evaluate, summary_as_dict
 from .hybrid import HybridIndex
+from .rerank import RerankingIndex
 
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -30,12 +31,12 @@ def build_parser() -> argparse.ArgumentParser:
     search = subparsers.add_parser("search", help="search the sample corpus")
     search.add_argument("query")
     search.add_argument("--top-k", type=int, default=5)
-    search.add_argument("--retriever", choices=("bm25", "dense", "hybrid"), default="bm25")
+    search.add_argument("--retriever", choices=("bm25", "dense", "hybrid", "reranked"), default="bm25")
 
     evaluation = subparsers.add_parser("evaluate", help="evaluate BM25 retrieval")
     evaluation.add_argument("--top-k", type=int, default=5)
     evaluation.add_argument("--output", type=Path)
-    evaluation.add_argument("--retriever", choices=("bm25", "dense", "hybrid"), default="bm25")
+    evaluation.add_argument("--retriever", choices=("bm25", "dense", "hybrid", "reranked"), default="bm25")
     evaluation.add_argument("--sentence-transformer", action="store_true")
     return parser
 
@@ -45,7 +46,9 @@ def main() -> int:
     passages = load_jsonl(DEFAULT_PASSAGES)
     use_dense = args.retriever == "dense"
     embedder = SentenceTransformerEmbedder() if getattr(args, "sentence_transformer", False) else None
-    if args.retriever == "hybrid":
+    if args.retriever == "reranked":
+        index = RerankingIndex(HybridIndex(passages, embedder=embedder))
+    elif args.retriever == "hybrid":
         index = HybridIndex(passages, embedder=embedder)
     else:
         index = DenseIndex(passages, embedder) if use_dense else BM25Index(passages)
