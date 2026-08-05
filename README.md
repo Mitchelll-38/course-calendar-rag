@@ -73,6 +73,14 @@ npm install
 npm run dev
 ```
 
+Run the browser-level test suite, which starts both FastAPI and Next.js:
+
+```shell
+cd frontend
+npx playwright install chromium
+npm run test:e2e
+```
+
 ## Calendar ingestion
 
 The permission-aware ingestion adapter is documented in [`docs/ingestion.md`](docs/ingestion.md). It allowlists the official calendar host, checks `robots.txt`, throttles requests, and retains passage-level provenance. Live ingestion is not run when the upstream source denies automated access.

@@ -34,6 +34,18 @@ class ApiTests(unittest.TestCase):
     def test_invalid_top_k_is_rejected(self) -> None:
         self.assertEqual(self.client.get("/search", params={"q": "waitlist", "top_k": 50}).status_code, 422)
 
+    def test_frontend_origin_is_allowed_by_cors(self) -> None:
+        response = self.client.options(
+            "/answer",
+            headers={
+                "Origin": "http://localhost:3000",
+                "Access-Control-Request-Method": "POST",
+                "Access-Control-Request-Headers": "content-type",
+            },
+        )
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.headers["access-control-allow-origin"], "http://localhost:3000")
+
 
 if __name__ == "__main__":
     unittest.main()

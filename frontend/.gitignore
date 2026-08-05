@@ -1,2 +1,4 @@
 .next-dev.log
 .next-dev-error.log
+playwright-report/
+test-results/
