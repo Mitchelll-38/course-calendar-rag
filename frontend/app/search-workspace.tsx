@@ -188,7 +188,7 @@ export default function SearchWorkspace() {
               </div>
               <div className="sources">
                 <h2>Sources</h2>
-                <ol>
+                <ol role="list">
                   {answer.sources.map((source, index) => {
                     const url = safeSourceUrl(source.source)
                     return (
