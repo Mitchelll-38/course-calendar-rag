@@ -71,6 +71,17 @@ class LocalPassageCliTests(unittest.TestCase):
             self.assertEqual(code, 2)
             self.assertIn("cannot load passages", error)
 
+    def test_punctuation_only_record_is_rejected_before_indexing(self) -> None:
+        with tempfile.TemporaryDirectory(dir=ROOT / "tests") as directory:
+            path = self.write(directory, [{"id": "x", "title": "---", "text": "!!!"}])
+            for retriever in ("bm25", "dense", "hybrid", "reranked"):
+                with self.subTest(retriever=retriever):
+                    code, _, error = self.run_cli(
+                        "search", "registration", "--passages", str(path), "--retriever", retriever,
+                    )
+                    self.assertEqual(code, 2)
+                    self.assertIn(f"{path}:1: passage has no searchable tokens", error)
+
     def test_evaluation_does_not_accept_external_passages(self) -> None:
         code, _, error = self.run_cli("evaluate", "--passages", "anything.jsonl")
         self.assertEqual(code, 2)

@@ -13,6 +13,7 @@ from .dense import DenseIndex
 from .evaluation import evaluate, summary_as_dict
 from .hybrid import HybridIndex
 from .rerank import RerankingIndex
+from .tokenize import tokenize
 
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -42,6 +43,8 @@ def load_search_passages(path: Path) -> list[dict[str, Any]]:
             for field in ("id", "title", "text"):
                 if not isinstance(passage.get(field), str) or not passage[field].strip():
                     raise ValueError(f"{path}:{line_number}: {field} must be a nonempty string")
+            if not tokenize(f"{passage['title']} {passage['text']}"):
+                raise ValueError(f"{path}:{line_number}: passage has no searchable tokens")
             passage_id = passage["id"]
             if passage_id in first_id_line:
                 raise ValueError(
