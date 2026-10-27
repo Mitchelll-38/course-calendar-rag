@@ -1,0 +1,70 @@
+"""Dense retrieval baseline with a dependency-free hashing embedder."""
+
+from __future__ import annotations
+
+from dataclasses import dataclass
+import hashlib
+import math
+from typing import Any, Iterable, Protocol
+
+from .bm25 import SearchResult
+from .tokenize import tokenize
+
+
+class Embedder(Protocol):
+    dimensions: int
+
+    def encode(self, texts: list[str]) -> list[list[float]]: ...
+
+
+@dataclass(frozen=True)
+class HashingEmbedder:
+    dimensions: int = 384
+
+    def __post_init__(self) -> None:
+        if self.dimensions < 1:
+            raise ValueError("dimensions must be at least 1")
+
+    def encode(self, texts: list[str]) -> list[list[float]]:
+        return [self._encode_one(text) for text in texts]
+
+    def _encode_one(self, text: str) -> list[float]:
+        vector = [0.0] * self.dimensions
+        terms = tokenize(text)
+        features = terms + [f"{left}_{right}" for left, right in zip(terms, terms[1:])]
+        for feature in features:
+            digest = hashlib.blake2b(feature.encode(), digest_size=8).digest()
+            bucket = int.from_bytes(digest, "big") % self.dimensions
+            sign = 1.0 if digest[0] & 1 else -1.0
+            vector[bucket] += sign
+        norm = math.sqrt(sum(value * value for value in vector))
+        return [value / norm for value in vector] if norm else vector
+
+
+def cosine_similarity(left: list[float], right: list[float]) -> float:
+    return sum(a * b for a, b in zip(left, right))
+
+
+class DenseIndex:
+    def __init__(
+        self, passages: Iterable[dict[str, Any]], *, embedder: Embedder | None = None
+    ) -> None:
+        self.passages = list(passages)
+        if not self.passages:
+            raise ValueError("at least one passage is required")
+        if len({passage["id"] for passage in self.passages}) != len(self.passages):
+            raise ValueError("passage IDs must be unique")
+        self.embedder = embedder or HashingEmbedder()
+        texts = [f"{passage['title']} {passage['text']}" for passage in self.passages]
+        self.vectors = self.embedder.encode(texts)
+
+    def search(self, query: str, *, top_k: int = 5) -> list[SearchResult]:
+        if top_k < 1:
+            raise ValueError("top_k must be at least 1")
+        query_vector = self.embedder.encode([query])[0]
+        scored = [
+            SearchResult(passage["id"], cosine_similarity(query_vector, vector), passage)
+            for passage, vector in zip(self.passages, self.vectors)
+        ]
+        scored.sort(key=lambda result: (-result.score, result.passage_id))
+        return scored[: min(top_k, len(scored))]
