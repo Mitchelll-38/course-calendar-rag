@@ -77,6 +77,8 @@ requests. Each nonblank JSONL row must be an object with a nonempty string
 `id`, `title`, and `text`, and IDs must be unique. Without this option, search
 still uses the synthetic sample. `evaluate` and `compare` continue to use only
 the synthetic labeled sample; their metrics do not assess an ingested export.
+Search requires `--top-k` of at least one. Evaluation and comparison require
+a retrieval depth of at least five so their recall@5 metrics use five ranks.
 
 ## Dense baseline
 
