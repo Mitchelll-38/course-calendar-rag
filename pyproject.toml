@@ -14,9 +14,11 @@ api = [
     "uvicorn[standard]>=0.30,<1",
     "httpx>=0.27,<1",
 ]
+ingest = ["beautifulsoup4>=4.12,<5", "httpx>=0.27,<1"]
 
 [project.scripts]
 calendar-rag = "course_calendar_rag.cli:main"
+calendar-ingest = "course_calendar_rag.ingest:main"
 
 [tool.setuptools.packages.find]
 where = ["src"]
