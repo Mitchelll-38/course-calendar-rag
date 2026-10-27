@@ -12,6 +12,7 @@ from .comparison import compare_evaluations
 from .dense import DenseIndex
 from .evaluation import evaluate, summary_as_dict
 from .hybrid import HybridIndex
+from .rerank import RerankingIndex
 
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -31,12 +32,12 @@ def build_parser() -> argparse.ArgumentParser:
     search = subparsers.add_parser("search", help="search the sample corpus")
     search.add_argument("query")
     search.add_argument("--top-k", type=int, default=5)
-    search.add_argument("--retriever", choices=("bm25", "dense", "hybrid"), default="bm25")
+    search.add_argument("--retriever", choices=("bm25", "dense", "hybrid", "reranked"), default="bm25")
 
     evaluation = subparsers.add_parser("evaluate", help="evaluate retrieval")
     evaluation.add_argument("--top-k", type=int, default=5)
     evaluation.add_argument("--output", type=Path)
-    evaluation.add_argument("--retriever", choices=("bm25", "dense", "hybrid"), default="bm25")
+    evaluation.add_argument("--retriever", choices=("bm25", "dense", "hybrid", "reranked"), default="bm25")
 
     comparison = subparsers.add_parser("compare", help="compare BM25 and hybrid retrieval")
     comparison.add_argument("--top-k", type=int, default=5)
@@ -80,6 +81,8 @@ def main() -> int:
         index = DenseIndex(passages)
     elif args.retriever == "hybrid":
         index = HybridIndex(passages)
+    elif args.retriever == "reranked":
+        index = RerankingIndex(HybridIndex(passages))
     else:
         index = BM25Index(passages)
     if args.command == "search":

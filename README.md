@@ -45,6 +45,17 @@ python -m course_calendar_rag.cli evaluate --retriever hybrid --output /tmp/hybr
 
 On the 20 synthetic questions, this default hybrid baseline has recall@5 of 0.875, compared with 0.925 for BM25 alone. Fusion does not guarantee better retrieval; use the labeled evaluation to assess weight and candidate settings before relying on it.
 
+## Feature reranking
+
+The `reranked` retriever takes the top 10 hybrid candidates and scores them using interpretable features: query-token overlap with the title and body, plus a bonus when the query contains the passage's exact course code. It returns the highest-scoring passages first. The score printed by `search` is the reranker score. This runs locally with the feature-hashing dense baseline and requires no model download.
+
+```shell
+python -m course_calendar_rag.cli search "Can I take COMP SCI 2C03?" --retriever reranked
+python -m course_calendar_rag.cli evaluate --retriever reranked --output /tmp/reranked_baseline.json
+```
+
+On the 20 synthetic questions, the default reranked retriever has recall@5 of 0.975, versus 0.875 for hybrid. Its recall@1 is 0.55 and MRR is 0.775, both below hybrid's 0.75 and 0.85. Use the per-question results to inspect where reranking helps or hurts; these sample metrics do not establish performance on live calendar content.
+
 ## Compare retrieval results
 
 Run both retrievers on the same synthetic questions and inspect aggregate metric changes and per-question gains, losses, and gold-passage ranks:
