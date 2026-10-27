@@ -25,6 +25,36 @@ def load_jsonl(path: Path) -> list[dict[str, Any]]:
         return [json.loads(line) for line in handle if line.strip()]
 
 
+def load_search_passages(path: Path) -> list[dict[str, Any]]:
+    """Read a local ingestion export with useful errors before building an index."""
+    passages: list[dict[str, Any]] = []
+    first_id_line: dict[str, int] = {}
+    with path.open(encoding="utf-8") as handle:
+        for line_number, line in enumerate(handle, start=1):
+            if not line.strip():
+                continue
+            try:
+                passage = json.loads(line)
+            except json.JSONDecodeError as exc:
+                raise ValueError(f"{path}:{line_number}: invalid JSON: {exc.msg}") from exc
+            if not isinstance(passage, dict):
+                raise ValueError(f"{path}:{line_number}: passage must be a JSON object")
+            for field in ("id", "title", "text"):
+                if not isinstance(passage.get(field), str) or not passage[field].strip():
+                    raise ValueError(f"{path}:{line_number}: {field} must be a nonempty string")
+            passage_id = passage["id"]
+            if passage_id in first_id_line:
+                raise ValueError(
+                    f"{path}:{line_number}: duplicate passage id {passage_id!r} "
+                    f"(first seen on line {first_id_line[passage_id]})"
+                )
+            first_id_line[passage_id] = line_number
+            passages.append(passage)
+    if not passages:
+        raise ValueError(f"{path}: no passages found")
+    return passages
+
+
 def build_parser() -> argparse.ArgumentParser:
     parser = argparse.ArgumentParser(description="Course calendar retrieval baseline")
     subparsers = parser.add_subparsers(dest="command", required=True)
@@ -33,6 +63,7 @@ def build_parser() -> argparse.ArgumentParser:
     search.add_argument("query")
     search.add_argument("--top-k", type=int, default=5)
     search.add_argument("--retriever", choices=("bm25", "dense", "hybrid", "reranked"), default="bm25")
+    search.add_argument("--passages", type=Path, help="local JSONL passage export (search only)")
 
     evaluation = subparsers.add_parser("evaluate", help="evaluate retrieval")
     evaluation.add_argument("--top-k", type=int, default=5)
@@ -50,7 +81,13 @@ def main() -> int:
     args = parser.parse_args()
     if args.command == "compare" and args.top_k < 5:
         parser.error("compare --top-k must be at least 5 to measure recall@5")
-    passages = load_jsonl(DEFAULT_PASSAGES)
+    if args.command == "search" and args.passages is not None:
+        try:
+            passages = load_search_passages(args.passages)
+        except (OSError, UnicodeError, ValueError) as exc:
+            parser.error(f"cannot load passages: {exc}")
+    else:
+        passages = load_jsonl(DEFAULT_PASSAGES)
     if args.command == "compare":
         questions = load_jsonl(DEFAULT_QUESTIONS)
         baseline_summary, baseline_details = evaluate(BM25Index(passages), questions, top_k=args.top_k)
