@@ -13,6 +13,7 @@ The ingestion command is intentionally conservative:
 - HTTP errors, including access restrictions, stop the run. The client does not retry around a denial.
 - Every passage retains its source URL, client UTC retrieval timestamp, section, and SHA-256 of its text.
 - Empty extraction results fail before an output file is written.
+- Existing output paths are rejected before fetching, and output creation is exclusive so an approved export cannot be overwritten by a concurrent run. Choose a new `--output` path for each run.
 - No live calendar content is checked into this repository by this pull request.
 
 At development time, the current calendar endpoint returned HTTP 403 to automated retrieval. Obtain explicit permission or an approved export before running ingestion. Do not attempt to bypass the restriction.

@@ -140,7 +140,7 @@ def write_jsonl(passages: list[IngestedPassage], output: Path) -> None:
     if not passages:
         raise ValueError("refusing to write an empty ingestion result")
     output.parent.mkdir(parents=True, exist_ok=True)
-    with output.open("w", encoding="utf-8") as handle:
+    with output.open("x", encoding="utf-8") as handle:
         for passage in passages:
             handle.write(json.dumps(asdict(passage), ensure_ascii=False) + "\n")
 
@@ -151,8 +151,13 @@ def main() -> int:
     parser.add_argument("--output", type=Path, required=True)
     parser.add_argument("--delay", type=float, default=2.0)
     args = parser.parse_args()
+    if args.output.exists() or args.output.is_symlink():
+        parser.error(f"output already exists: {args.output}; choose a new --output path")
     passages = fetch_and_parse(args.url, delay_seconds=max(args.delay, 1.0))
-    write_jsonl(passages, args.output)
+    try:
+        write_jsonl(passages, args.output)
+    except FileExistsError:
+        parser.error(f"output already exists: {args.output}; choose a new --output path")
     print(f"Wrote {len(passages)} passages to {args.output}")
     return 0
 
