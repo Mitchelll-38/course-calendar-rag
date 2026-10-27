@@ -1,6 +1,8 @@
 import sys
+import hashlib
 import tempfile
 import unittest
+from datetime import datetime
 from pathlib import Path
 from unittest.mock import patch
 
@@ -36,7 +38,35 @@ class IngestTests(unittest.TestCase):
         self.assertTrue(all(item.is_synthetic is False for item in self.passages))
 
     def test_ids_and_hashes_are_deterministic(self) -> None:
-        self.assertTrue(all(item.id.endswith(item.content_sha256[:16]) for item in self.passages))
+        for item in self.passages:
+            self.assertEqual(item.content_sha256, hashlib.sha256(item.text.encode()).hexdigest())
+            self.assertEqual(
+                item.id,
+                "mcmaster-" + hashlib.sha256(f"{item.source}\n{item.section}\n{item.text}".encode()).hexdigest()[:16],
+            )
+
+    def test_short_sections_and_nested_items(self) -> None:
+        html = """<main><h2>A</h2><p>Yes.</p><h2>B</h2>
+        <ul><li>Parent <strong>rule</strong><ul><li>Child rule.</li></ul></li></ul></main>"""
+        passages = parse_calendar_html(html, "https://academiccalendars.romcmaster.ca/page", "now")
+        self.assertEqual([item.text for item in passages], ["Yes.", "Parent rule Child rule."])
+        self.assertEqual(passages[1].text.count("Child rule."), 1)
+
+    def test_same_text_has_same_content_hash_and_distinct_section_ids(self) -> None:
+        html = "<main><h2>A</h2><p>Same.</p><h2>B</h2><p>Same.</p></main>"
+        passages = parse_calendar_html(html, "https://academiccalendars.romcmaster.ca/page", "now")
+        self.assertEqual(len(passages), 2)
+        self.assertEqual(passages[0].content_sha256, passages[1].content_sha256)
+        self.assertNotEqual(passages[0].id, passages[1].id)
+
+    def test_empty_page_and_empty_output_are_rejected(self) -> None:
+        with self.assertRaises(ValueError):
+            parse_calendar_html("<main><h2>Empty</h2></main>", "https://academiccalendars.romcmaster.ca/page", "now")
+        with tempfile.TemporaryDirectory(dir=ROOT / "tests") as directory:
+            output = Path(directory) / "empty.jsonl"
+            with self.assertRaises(ValueError):
+                write_jsonl([], output)
+            self.assertFalse(output.exists())
 
     def test_non_allowlisted_hosts_are_rejected(self) -> None:
         for url in (
@@ -74,9 +104,10 @@ class IngestTests(unittest.TestCase):
         client = httpx.Client(transport=httpx.MockTransport(handler))
         with patch("course_calendar_rag.ingest.httpx.Client", return_value=client), patch(
             "course_calendar_rag.ingest.time.sleep"
-        ):
+        ) as sleep:
             with self.assertRaises(httpx.HTTPStatusError):
                 fetch_and_parse("https://academiccalendars.romcmaster.ca/calendar", delay_seconds=0)
+        sleep.assert_called_once_with(1.0)
         self.assertEqual(
             requests,
             [
@@ -84,6 +115,27 @@ class IngestTests(unittest.TestCase):
                 "https://academiccalendars.romcmaster.ca/calendar",
             ],
         )
+
+    def test_crawl_delay_and_client_timestamp(self) -> None:
+        html = "<main><h2>Rule</h2><p>Yes.</p></main>"
+
+        def handler(request):
+            if request.url.path == "/robots.txt":
+                return httpx.Response(200, text="User-agent: *\nAllow: /\nCrawl-delay: 5")
+            return httpx.Response(200, text=html, headers={"Date": "Thu, 01 Jan 1970 00:00:00 GMT"})
+
+        client = httpx.Client(transport=httpx.MockTransport(handler))
+        before = datetime.now().astimezone()
+        with patch("course_calendar_rag.ingest.httpx.Client", return_value=client), patch(
+            "course_calendar_rag.ingest.time.sleep"
+        ) as sleep:
+            passages = fetch_and_parse("https://academiccalendars.romcmaster.ca/page", delay_seconds=0)
+        after = datetime.now().astimezone()
+        sleep.assert_called_once_with(5.0)
+        stamp = datetime.fromisoformat(passages[0].retrieved_at)
+        self.assertEqual(stamp.utcoffset().total_seconds(), 0)
+        self.assertLessEqual(before, stamp)
+        self.assertLessEqual(stamp, after)
 
     def test_jsonl_writer(self) -> None:
         with tempfile.TemporaryDirectory(dir=ROOT / "tests") as directory:

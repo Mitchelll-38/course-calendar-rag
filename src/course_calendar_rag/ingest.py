@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import argparse
 from dataclasses import asdict, dataclass
+from datetime import datetime, timezone
 import hashlib
 import json
 from pathlib import Path
@@ -11,7 +12,7 @@ import time
 from urllib.parse import urlparse
 from urllib.robotparser import RobotFileParser
 
-from bs4 import BeautifulSoup
+from bs4 import BeautifulSoup, NavigableString
 import httpx
 
 
@@ -44,21 +45,32 @@ def assert_allowed_url(url: str) -> None:
         raise ValueError(f"URL must use HTTPS on an allowlisted host: {sorted(ALLOWED_HOSTS)}")
 
 
-def robots_allows(url: str, client: httpx.Client) -> bool:
+def robots_policy(url: str, client: httpx.Client) -> float:
     assert_allowed_url(url)
     parsed = urlparse(url)
     robots_url = f"{parsed.scheme}://{parsed.netloc}/robots.txt"
     response = client.get(robots_url, headers={"User-Agent": USER_AGENT})
     if response.status_code >= 300:
-        return False
+        raise PermissionError("robots.txt is unavailable or redirected")
     parser = RobotFileParser()
     parser.set_url(robots_url)
     parser.parse(response.text.splitlines())
-    return parser.can_fetch(USER_AGENT, url)
+    if not parser.can_fetch(USER_AGENT, url):
+        raise PermissionError("robots.txt does not permit this user agent")
+    return float(parser.crawl_delay(USER_AGENT) or 0)
 
 
 def clean_text(element) -> str:
     return " ".join(element.get_text(" ", strip=True).split())
+
+
+def clean_list_item(element) -> str:
+    """Read this item without repeating text from nested list items."""
+    return " ".join(
+        " ".join(part.split())
+        for part in element.descendants
+        if isinstance(part, NavigableString) and part.find_parent("li") is element and part.strip()
+    )
 
 
 def parse_calendar_html(html: str, source_url: str, retrieved_at: str) -> list[IngestedPassage]:
@@ -79,19 +91,18 @@ def parse_calendar_html(html: str, source_url: str, retrieved_at: str) -> list[I
             return
         text = " ".join(buffer).strip()
         buffer.clear()
-        if len(text) < 40:
-            return
-        digest = hashlib.sha256(f"{source_url}\n{current_heading}\n{text}".encode()).hexdigest()
+        content_digest = hashlib.sha256(text.encode()).hexdigest()
+        identity_digest = hashlib.sha256(f"{source_url}\n{current_heading}\n{text}".encode()).hexdigest()
         passages.append(
             IngestedPassage(
-                id=f"mcmaster-{digest[:16]}",
+                id=f"mcmaster-{identity_digest[:16]}",
                 title=page_title,
                 text=text,
                 source=source_url,
                 section=current_heading,
                 document_type="calendar",
                 retrieved_at=retrieved_at,
-                content_sha256=digest,
+                content_sha256=content_digest,
             )
         )
 
@@ -100,14 +111,16 @@ def parse_calendar_html(html: str, source_url: str, retrieved_at: str) -> list[I
             flush()
             current_heading = clean_text(element)
         elif element.find_parent("li") is None or element.name == "li":
-            text = clean_text(element)
+            text = clean_list_item(element) if element.name == "li" else clean_text(element)
             if text:
                 buffer.append(text)
     flush()
 
     unique: dict[str, IngestedPassage] = {}
     for passage in passages:
-        unique.setdefault(passage.content_sha256, passage)
+        unique.setdefault(passage.id, passage)
+    if not unique:
+        raise ValueError("calendar page contains no passages")
     return list(unique.values())
 
 
@@ -115,16 +128,17 @@ def fetch_and_parse(url: str, *, delay_seconds: float = 2.0) -> list[IngestedPas
     assert_allowed_url(url)
     # Redirects are rejected so no request can leave the allowlisted origin.
     with httpx.Client(timeout=20, follow_redirects=False) as client:
-        if not robots_allows(url, client):
-            raise PermissionError("robots.txt is unavailable or does not permit this user agent")
-        time.sleep(delay_seconds)
+        crawl_delay = robots_policy(url, client)
+        time.sleep(max(1.0, delay_seconds, crawl_delay))
         response = client.get(url, headers={"User-Agent": USER_AGENT})
         response.raise_for_status()
-        retrieved_at = response.headers.get("date", "unknown")
+        retrieved_at = datetime.now(timezone.utc).isoformat()
         return parse_calendar_html(response.text, str(response.url), retrieved_at)
 
 
 def write_jsonl(passages: list[IngestedPassage], output: Path) -> None:
+    if not passages:
+        raise ValueError("refusing to write an empty ingestion result")
     output.parent.mkdir(parents=True, exist_ok=True)
     with output.open("w", encoding="utf-8") as handle:
         for passage in passages:
