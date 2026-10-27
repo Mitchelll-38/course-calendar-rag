@@ -82,8 +82,10 @@ def build_parser() -> argparse.ArgumentParser:
 def main() -> int:
     parser = build_parser()
     args = parser.parse_args()
-    if args.command == "compare" and args.top_k < 5:
-        parser.error("compare --top-k must be at least 5 to measure recall@5")
+    if args.command == "search" and args.top_k < 1:
+        parser.error("search --top-k must be at least 1")
+    if args.command in ("evaluate", "compare") and args.top_k < 5:
+        parser.error(f"{args.command} --top-k must be at least 5 to measure recall@5")
     if args.command == "search" and args.passages is not None:
         try:
             passages = load_search_passages(args.passages)
