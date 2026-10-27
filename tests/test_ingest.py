@@ -1,7 +1,9 @@
 import sys
 import hashlib
+import io
 import tempfile
 import unittest
+from contextlib import redirect_stderr
 from datetime import datetime
 from pathlib import Path
 from unittest.mock import patch
@@ -14,6 +16,7 @@ sys.path.insert(0, str(ROOT / "src"))
 from course_calendar_rag.ingest import (  # noqa: E402
     assert_allowed_url,
     fetch_and_parse,
+    main,
     parse_calendar_html,
     write_jsonl,
 )
@@ -142,6 +145,26 @@ class IngestTests(unittest.TestCase):
             output = Path(directory) / "passages.jsonl"
             write_jsonl(self.passages, output)
             self.assertEqual(len(output.read_text(encoding="utf-8").splitlines()), 2)
+
+            original = output.read_bytes()
+            with self.assertRaises(FileExistsError):
+                write_jsonl(self.passages, output)
+            self.assertEqual(output.read_bytes(), original)
+
+    def test_existing_output_fails_before_any_request(self) -> None:
+        with tempfile.TemporaryDirectory(dir=ROOT / "tests") as directory:
+            output = Path(directory) / "approved.jsonl"
+            output.write_bytes(b"approved export\n")
+            url = "https://academiccalendars.romcmaster.ca/calendar"
+            stderr = io.StringIO()
+            with patch.object(sys, "argv", ["calendar-ingest", url, "--output", str(output)]), patch(
+                "course_calendar_rag.ingest.fetch_and_parse"
+            ) as fetch, redirect_stderr(stderr), self.assertRaises(SystemExit) as error:
+                main()
+            self.assertEqual(error.exception.code, 2)
+            self.assertIn("output already exists", stderr.getvalue())
+            fetch.assert_not_called()
+            self.assertEqual(output.read_bytes(), b"approved export\n")
 
 
 if __name__ == "__main__":
