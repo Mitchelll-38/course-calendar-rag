@@ -33,6 +33,23 @@ class BM25Tests(unittest.TestCase):
         with self.assertRaises(ValueError):
             BM25Index(PASSAGES).search("waitlist", top_k=0)
 
+    def test_corpus_without_searchable_tokens_is_rejected(self) -> None:
+        passages = [
+            {"id": "punctuation", "title": "!!!", "text": "..."},
+            {"id": "blank", "title": "", "text": "   "},
+        ]
+        with self.assertRaisesRegex(ValueError, "searchable tokens"):
+            BM25Index(passages)
+
+    def test_empty_document_is_allowed_in_searchable_corpus(self) -> None:
+        passages = [
+            {"id": "empty", "title": "!!!", "text": "..."},
+            {"id": "course", "title": "COMPSCI 2C03", "text": "Data structures"},
+        ]
+        results = BM25Index(passages).search("COMPSCI 2C03")
+        self.assertEqual(results[0].passage_id, "course")
+        self.assertEqual(results[1].score, 0.0)
+
 
 if __name__ == "__main__":
     unittest.main()

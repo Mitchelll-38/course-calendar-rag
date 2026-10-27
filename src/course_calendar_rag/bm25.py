@@ -38,6 +38,8 @@ class BM25Index:
         ]
         self.term_frequencies = [Counter(document) for document in self.documents]
         self.document_lengths = [len(document) for document in self.documents]
+        if not any(self.document_lengths):
+            raise ValueError("at least one passage must contain searchable tokens")
         self.average_document_length = sum(self.document_lengths) / len(self.documents)
 
         document_frequency: Counter[str] = Counter()
