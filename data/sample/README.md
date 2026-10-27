@@ -9,6 +9,8 @@ This directory provides a deliberately small corpus for developing and testing r
 
 Every passage uses a `synthetic://` source and sets `is_synthetic` to `true`. The text is illustrative, is not copied from the McMaster calendar, and must not be treated as current or authoritative academic advice.
 
+The validator checks nonempty passage and question fields, unique IDs, synthetic source markers, allowed difficulty values, and that each question has distinct gold IDs referring to passages in this fixture.
+
 ## Validate
 
 From the repository root:
