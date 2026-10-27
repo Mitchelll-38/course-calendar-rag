@@ -54,6 +54,15 @@ export default function SearchWorkspace() {
 
   useEffect(() => () => activeRequest.current?.abort(), [])
 
+  function invalidateResults() {
+    activeRequest.current?.abort()
+    activeRequest.current = null
+    requestNumber.current += 1
+    setAnswer(null)
+    setLoading(false)
+    setError('')
+  }
+
   async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
     activeRequest.current?.abort()
@@ -118,8 +127,8 @@ export default function SearchWorkspace() {
             className="query-input"
             value={question}
             onChange={(event) => {
+              invalidateResults()
               setQuestion(event.target.value)
-              if (error) setError('')
             }}
             maxLength={500}
             rows={3}
@@ -137,7 +146,10 @@ export default function SearchWorkspace() {
                   name="retriever"
                   value={mode.value}
                   checked={retriever === mode.value}
-                  onChange={() => setRetriever(mode.value)}
+                  onChange={() => {
+                    invalidateResults()
+                    setRetriever(mode.value)
+                  }}
                 />
                 <span>{mode.label}</span>
                 <small>{mode.description}</small>
@@ -151,7 +163,10 @@ export default function SearchWorkspace() {
         <div className="examples">
           <p>Try a sample question</p>
           {examples.map((example) => (
-            <button key={example} type="button" onClick={() => setQuestion(example)}>
+            <button key={example} type="button" onClick={() => {
+              invalidateResults()
+              setQuestion(example)
+            }}>
               {example}
             </button>
           ))}
