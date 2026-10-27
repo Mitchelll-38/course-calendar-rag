@@ -45,6 +45,41 @@ def cosine_similarity(left: list[float], right: list[float]) -> float:
     return sum(a * b for a, b in zip(left, right))
 
 
+def _checked_vectors(
+    encoded: Iterable[Iterable[float]], *, count: int, dimensions: int
+) -> list[list[float]]:
+    try:
+        vectors = list(encoded)
+    except TypeError as exc:
+        raise ValueError("embedder must return a batch of vectors") from exc
+    if len(vectors) != count:
+        raise ValueError(f"embedder returned {len(vectors)} vectors; expected {count}")
+    checked = []
+    for vector in vectors:
+        try:
+            values = list(vector)
+        except TypeError as exc:
+            raise ValueError("embedder must return vectors of numbers") from exc
+        if len(values) != dimensions:
+            raise ValueError(
+                f"embedder returned a vector with {len(values)} dimensions; "
+                f"expected {dimensions}"
+            )
+        normalized = []
+        for value in values:
+            if isinstance(value, (bool, str, bytes)):
+                raise ValueError("embedder vectors must contain finite numbers")
+            try:
+                numeric = float(value)
+            except (TypeError, ValueError, OverflowError):
+                raise ValueError("embedder vectors must contain finite numbers") from None
+            if not math.isfinite(numeric):
+                raise ValueError("embedder vectors must contain finite numbers")
+            normalized.append(numeric)
+        checked.append(normalized)
+    return checked
+
+
 class DenseIndex:
     def __init__(
         self, passages: Iterable[dict[str, Any]], *, embedder: Embedder | None = None
@@ -55,16 +90,26 @@ class DenseIndex:
         if len({passage["id"] for passage in self.passages}) != len(self.passages):
             raise ValueError("passage IDs must be unique")
         self.embedder = embedder or HashingEmbedder()
+        dimensions = getattr(self.embedder, "dimensions", None)
+        if isinstance(dimensions, bool) or not isinstance(dimensions, int) or dimensions < 1:
+            raise ValueError("embedder dimensions must be a positive integer")
+        self.dimensions = dimensions
         texts = [f"{passage['title']} {passage['text']}" for passage in self.passages]
-        self.vectors = self.embedder.encode(texts)
+        self.vectors = _checked_vectors(
+            self.embedder.encode(texts), count=len(texts), dimensions=self.dimensions
+        )
 
     def search(self, query: str, *, top_k: int = 5) -> list[SearchResult]:
         if top_k < 1:
             raise ValueError("top_k must be at least 1")
-        query_vector = self.embedder.encode([query])[0]
-        scored = [
-            SearchResult(passage["id"], cosine_similarity(query_vector, vector), passage)
-            for passage, vector in zip(self.passages, self.vectors)
-        ]
+        query_vector = _checked_vectors(
+            self.embedder.encode([query]), count=1, dimensions=self.dimensions
+        )[0]
+        scored = []
+        for passage, vector in zip(self.passages, self.vectors):
+            score = cosine_similarity(query_vector, vector)
+            if not math.isfinite(score):
+                raise ValueError("dense similarity score must be finite")
+            scored.append(SearchResult(passage["id"], score, passage))
         scored.sort(key=lambda result: (-result.score, result.passage_id))
         return scored[: min(top_k, len(scored))]
