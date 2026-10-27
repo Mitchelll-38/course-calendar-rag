@@ -63,6 +63,21 @@ python -m course_calendar_rag.cli search "Can I take COMP SCI 2C03?"
 python -m course_calendar_rag.cli evaluate --output /tmp/bm25_baseline.json
 ```
 
+## Search a local calendar export
+
+After a calendar page has been fetched with permission and exported to JSONL by
+`calendar-ingest`, search that approved **local file** with any CLI retriever:
+
+```shell
+python -m course_calendar_rag.cli search "registration deadline" --passages path/to/approved-passages.jsonl --retriever hybrid
+```
+
+The `--passages` option only reads the supplied file; search makes no network
+requests. Each nonblank JSONL row must be an object with a nonempty string
+`id`, `title`, and `text`, and IDs must be unique. Without this option, search
+still uses the synthetic sample. `evaluate` and `compare` continue to use only
+the synthetic labeled sample; their metrics do not assess an ingested export.
+
 ## Dense baseline
 
 Dense retrieval currently uses a deterministic feature-hashing baseline. It runs locally with no model download:
