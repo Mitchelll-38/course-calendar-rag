@@ -46,37 +46,73 @@ def validate_records(
     passages: list[dict[str, Any]], questions: list[dict[str, Any]]
 ) -> list[str]:
     errors: list[str] = []
-    passage_ids = [record.get("id") for record in passages]
-    question_ids = [record.get("id") for record in questions]
+    if not passages:
+        errors.append("at least one passage is required")
+    if not questions:
+        errors.append("at least one evaluation question is required")
+    passage_ids: set[str] = set()
+    question_ids: set[str] = set()
 
-    if len(passage_ids) != len(set(passage_ids)):
-        errors.append("passage IDs must be unique")
-    if len(question_ids) != len(set(question_ids)):
-        errors.append("question IDs must be unique")
-
-    for record in passages:
+    for row, record in enumerate(passages, start=1):
+        label = f"passage row {row}"
+        if not isinstance(record, dict):
+            errors.append(f"{label} must be a JSON object")
+            continue
         missing = PASSAGE_FIELDS - record.keys()
         if missing:
-            errors.append(f"passage {record.get('id', '<unknown>')} missing {sorted(missing)}")
+            errors.append(f"{label} missing {sorted(missing)}")
+        for field in sorted(PASSAGE_FIELDS - {"is_synthetic"}):
+            value = record.get(field)
+            if not isinstance(value, str) or not value.strip():
+                errors.append(f"{label} {field} must be a nonempty string")
+        passage_id = record.get("id")
+        if isinstance(passage_id, str) and passage_id.strip():
+            if passage_id in passage_ids:
+                errors.append(f"duplicate passage ID: {passage_id}")
+            passage_ids.add(passage_id)
+        source = record.get("source")
+        if isinstance(source, str) and source.strip():
+            if not source.startswith("synthetic://"):
+                errors.append(f"{label} source must start with synthetic://")
+            elif not source.removeprefix("synthetic://").strip():
+                errors.append(f"{label} source must identify a synthetic document")
         if record.get("is_synthetic") is not True:
-            errors.append(f"passage {record.get('id', '<unknown>')} must be marked synthetic")
+            errors.append(f"{label} must be marked synthetic")
 
-    known_passage_ids = set(passage_ids)
-    for record in questions:
+    for row, record in enumerate(questions, start=1):
+        label = f"question row {row}"
+        if not isinstance(record, dict):
+            errors.append(f"{label} must be a JSON object")
+            continue
         missing = QUESTION_FIELDS - record.keys()
         if missing:
-            errors.append(f"question {record.get('id', '<unknown>')} missing {sorted(missing)}")
+            errors.append(f"{label} missing {sorted(missing)}")
+        for field in sorted(QUESTION_FIELDS - {"gold_passage_ids", "difficulty"}):
+            value = record.get(field)
+            if not isinstance(value, str) or not value.strip():
+                errors.append(f"{label} {field} must be a nonempty string")
+        question_id = record.get("id")
+        if isinstance(question_id, str) and question_id.strip():
+            if question_id in question_ids:
+                errors.append(f"duplicate question ID: {question_id}")
+            question_ids.add(question_id)
         gold_ids = record.get("gold_passage_ids", [])
         if not isinstance(gold_ids, list) or not gold_ids:
-            errors.append(f"question {record.get('id', '<unknown>')} needs gold passage IDs")
+            errors.append(f"{label} needs a nonempty list of gold passage IDs")
         else:
-            unknown = set(gold_ids) - known_passage_ids
-            if unknown:
-                errors.append(
-                    f"question {record.get('id', '<unknown>')} references unknown passages {sorted(unknown)}"
-                )
-        if record.get("difficulty") not in DIFFICULTIES:
-            errors.append(f"question {record.get('id', '<unknown>')} has invalid difficulty")
+            seen: set[str] = set()
+            for gold_id in gold_ids:
+                if not isinstance(gold_id, str) or not gold_id.strip():
+                    errors.append(f"{label} gold passage IDs must be nonempty strings")
+                    continue
+                if gold_id in seen:
+                    errors.append(f"{label} repeats gold passage ID: {gold_id}")
+                elif gold_id not in passage_ids:
+                    errors.append(f"{label} references unknown passage: {gold_id}")
+                seen.add(gold_id)
+        difficulty = record.get("difficulty")
+        if not isinstance(difficulty, str) or difficulty not in DIFFICULTIES:
+            errors.append(f"{label} has invalid difficulty")
 
     return errors
 
