@@ -67,3 +67,17 @@ python -m course_calendar_rag.cli compare --top-k 10
 
 The comparison uses the local feature-hashing dense baseline; no model download or live course data is needed. A negative delta means hybrid scored lower than BM25. `--top-k` must be at least five and sets retrieval depth, which can affect hybrid ranking; recall changes are measured at five.
 The command refuses to overwrite an existing output file.
+
+## Local API demo
+
+From the repository root, install the optional API dependencies and start the local service:
+
+```shell
+pip install -e '.[api]'
+uvicorn course_calendar_rag.api:app --host 127.0.0.1 --port 8000 --no-access-log
+```
+
+Open <http://127.0.0.1:8000/docs> for the interactive API documentation. The `/answer` endpoint returns an extractive answer from the top retrieved passage with a disclaimer. The service reads only the synthetic fixture in the source tree. It does not ingest live calendar data, and its answers are not authoritative academic advice.
+
+Browser requests are allowed from the frontend development origins `http://localhost:3000` and `http://127.0.0.1:3000` through CORS. This is a source-tree demo: public deployment and packaging the fixture as installed data are not configured.
+Use only non-sensitive demo queries. The GET `/search` route places the query in the URL, which clients or proxies may log; POST `/answer` sends it in the request body. CORS is not authentication.
