@@ -18,8 +18,8 @@ export default function Home() {
             <p className="eyebrow"><span className="eyebrow-line" /> KNOW THE RULES, FIND YOUR PATH</p>
             <h1 id="page-title">The calendar, <em>in context.</em></h1>
             <p className="intro-lead">
-              Ask a question about academic regulations or courses. MacReg finds relevant passages
-              and shows the evidence behind its answer.
+              Ask a question about academic regulations or courses. MacReg shows ranked passages
+              from the sample calendar and their source details.
             </p>
           </div>
           <div className="intro-aside" aria-label="How this research preview works">

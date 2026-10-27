@@ -23,7 +23,7 @@ type AnswerResponse = {
 
 const modes: { value: Retriever; label: string; description: string }[] = [
   { value: 'bm25', label: 'BM25', description: 'Keyword match' },
-  { value: 'dense', label: 'Dense', description: 'Meaning match' },
+  { value: 'dense', label: 'Dense', description: 'Hashed word/phrase match' },
   { value: 'hybrid', label: 'Hybrid', description: 'Combined search' },
   { value: 'reranked', label: 'Reranked', description: 'Refined order' },
 ]
@@ -106,7 +106,7 @@ export default function SearchWorkspace() {
         setError(
           cause instanceof Error && cause.message !== 'Failed to fetch'
             ? cause.message
-            : 'Could not reach the answer service. Check that the local API is running and try again.',
+            : 'Could not reach the calendar search API. Check that the local API is running and try again.',
         )
       }
     } finally {
@@ -157,7 +157,7 @@ export default function SearchWorkspace() {
             ))}
           </fieldset>
           <button type="submit" disabled={loading}>
-            {loading ? 'Searching…' : 'Find an answer'}
+            {loading ? 'Searching…' : 'Search calendar passages'}
           </button>
         </form>
         <div className="examples">
@@ -178,16 +178,17 @@ export default function SearchWorkspace() {
           <p className="loading" role="status">Searching the sample calendar…</p>
         ) : answer ? (
           answer.sources.length === 0 ? (
-            <p className="empty">No matching passages were found. Try another question or search mode.</p>
+            <p className="empty">No passages were retrieved. Try another question or search mode.</p>
           ) : (
             <>
               <div className="answer">
-                <p className="answer-label">Answer from the sample calendar</p>
+                <p className="answer-label">Top retrieved passage from the sample calendar</p>
                 <p>{answer.answer}</p>
+                <p className="disclaimer">This excerpt may not answer your question. Check the passage and source.</p>
                 <p className="disclaimer">{answer.disclaimer}</p>
               </div>
               <div className="sources">
-                <h2>Sources</h2>
+                <h2>Retrieved passages</h2>
                 <ol role="list">
                   {answer.sources.map((source, index) => {
                     const url = safeSourceUrl(source.source)
@@ -216,7 +217,7 @@ export default function SearchWorkspace() {
             </>
           )
         ) : (
-          <p className="empty">Ask a question to see an answer and its supporting passages.</p>
+          <p className="empty">Ask a question to search passages from the sample calendar.</p>
         )}
       </section>
     </section>
