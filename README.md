@@ -10,7 +10,7 @@ The local CLI, API, and Next.js frontend run against a small synthetic corpus. T
 
 ## Local quickstart
 
-Install Python 3.11 or newer and Node.js with npm. Run these commands from the repository root. The Python package has no required third-party dependencies for CLI search; install the optional `api` dependencies to use the browser demo.
+Install Python 3.11 or newer and Node.js 20.9.0 or newer with npm (required by the locked Next.js version). Run these commands from the repository root. The Python package has no required third-party dependencies for CLI search; install the optional `api` dependencies to use the browser demo.
 
 **Windows PowerShell:**
 
