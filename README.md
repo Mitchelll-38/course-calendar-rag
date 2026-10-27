@@ -22,7 +22,7 @@ The first retriever is a dependency-free BM25 implementation with course-code no
 ```shell
 $env:PYTHONPATH="src" # PowerShell; use `export PYTHONPATH=src` on macOS/Linux
 python -m course_calendar_rag.cli search "Can I take COMP SCI 2C03?"
-python -m course_calendar_rag.cli evaluate --output results/bm25_baseline.json
+python -m course_calendar_rag.cli evaluate --output /tmp/bm25_baseline.json
 ```
 
 ## Dense baseline
@@ -33,3 +33,14 @@ Dense retrieval currently uses a deterministic feature-hashing baseline. It runs
 python -m course_calendar_rag.cli search "Can I take COMP SCI 2C03?" --retriever dense
 python -m course_calendar_rag.cli evaluate --retriever dense --output /tmp/dense_baseline.json
 ```
+
+## Hybrid retrieval
+
+Hybrid retrieval combines BM25 and dense results using weighted reciprocal rank fusion. It ranks passages by their positions in each result list, so the different score scales do not need to match.
+
+```shell
+python -m course_calendar_rag.cli search "Can I take COMP SCI 2C03?" --retriever hybrid
+python -m course_calendar_rag.cli evaluate --retriever hybrid --output /tmp/hybrid_baseline.json
+```
+
+On the 20 synthetic questions, this default hybrid baseline has recall@5 of 0.875, compared with 0.925 for BM25 alone. Fusion does not guarantee better retrieval; use the labeled evaluation to assess weight and candidate settings before relying on it.
