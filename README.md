@@ -1,12 +1,50 @@
 # Course Calendar RAG
 
-A hybrid retrieval question-answering system for McMaster University academic regulations and course-calendar content.
+A retrieval question-answering research prototype for McMaster University academic regulations and course-calendar content.
 
-The project will combine lexical and semantic retrieval, reciprocal rank fusion, reranking, and a labeled evaluation suite. Development is organized as small, reviewable pull requests.
+The current prototype combines lexical retrieval, a deterministic feature-hashing dense baseline, reciprocal rank fusion, feature reranking, and a labeled synthetic evaluation suite.
 
 ## Status
 
-The first development milestone adds a small synthetic test corpus and labeled retrieval questions before any live calendar ingestion is introduced. See [`data/sample`](data/sample) for the dataset and its limitations.
+The local CLI, API, and Next.js frontend run against a small synthetic corpus. The separate ingestion command can extract an explicitly permitted calendar page, but its output is not connected to the demo search index. See [`data/sample`](data/sample) for the fixture and its limitations, and [`docs/ingestion.md`](docs/ingestion.md) for access rules.
+
+## Local quickstart
+
+Install Python 3.11 or newer and Node.js with npm. Run these commands from the repository root. The Python package has no required third-party dependencies for CLI search; install the optional `api` dependencies to use the browser demo.
+
+**Windows PowerShell:**
+
+```powershell
+python -m venv .venv
+.\.venv\Scripts\Activate.ps1
+python -m pip install -e ".[api]"
+python -m course_calendar_rag.cli search "Can I take COMP SCI 2C03?"
+uvicorn course_calendar_rag.api:app --host 127.0.0.1 --port 8000 --no-access-log
+```
+
+**macOS/Linux shell:**
+
+```sh
+python3 -m venv .venv
+. .venv/bin/activate
+python -m pip install -e '.[api]'
+python -m course_calendar_rag.cli search "Can I take COMP SCI 2C03?"
+uvicorn course_calendar_rag.api:app --host 127.0.0.1 --port 8000 --no-access-log
+```
+
+Keep that terminal running. In a **second terminal**, start the frontend (PowerShell and macOS/Linux):
+
+```sh
+cd frontend
+npm ci
+npm run dev
+```
+
+Open <http://localhost:3000> and try a sample question. The API documentation is at <http://127.0.0.1:8000/docs>; <http://127.0.0.1:8000/health> reports the dataset as `synthetic`. The frontend calls `http://localhost:8000` by default; `frontend/.env.example` shows the `NEXT_PUBLIC_API_URL` setting if you need to configure that address before starting Next.js. The API accepts browser requests only from `http://localhost:3000` and `http://127.0.0.1:3000`. If Next.js starts on another port, free port 3000 and restart it for this local setup.
+
+For CLI-only use, install with `python -m pip install -e .` and skip both servers. This demo uses illustrative `synthetic://` passages, not live calendar content or authoritative academic advice. The dense option uses deterministic feature hashing, not a trained semantic embedding model. The bundled evaluation questions are synthetic and do not establish real-world performance.
+
+Calendar ingestion is a separate, permission-gated workflow. The [`ingestion guide`](docs/ingestion.md) describes a URL fetch command to use only with explicit permission and an allowlisted page that permits the request. An approved export is another possible source, but no export-import command is provided here. Any ingested or exported content requires review and an additional indexing step before it could be searched; the local API and frontend continue to use the synthetic fixture.
 
 ## Validate the sample data
 
